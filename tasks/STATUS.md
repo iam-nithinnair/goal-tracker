@@ -15,7 +15,7 @@ the testing step or acceptance criteria are not done yet (noted); **Not started*
 | S0-T07 Migration and seed workflow | Partial | Migrations and template seed work and re-apply cleanly. No `seed-test` script (tests create their own users). |
 | S0-T08 CI | Partial | `.github/workflows/ci.yml` written; never run (no remote yet). |
 | S0-T09 RLS test harness | Done | RLS tested directly through PostgREST as user A, user B and anonymous (`test_api_integration.py`). |
-| S0-T10 Deployment (staging) | Not started | Needs hosting decisions. |
+| S0-T10 Deployment (staging) | Partial | Dockerfile, `render.yaml`, `vercel.json` and docs/08-deploy.md are done; the API image was built and run locally. Not deployed yet: needs your Render and Vercel accounts. |
 
 ## Sprint 1: Auth, challenges, check-ins
 | Task | Status | Notes |

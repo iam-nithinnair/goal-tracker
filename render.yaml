@@ -1,0 +1,19 @@
+# Render Blueprint: backend API as a Docker web service. The frontend is deployed on Vercel (frontend/vercel.json).
+services:
+  - type: web
+    name: goal-tracker-api
+    runtime: docker
+    plan: free
+    dockerContext: ./backend
+    dockerfilePath: ./backend/Dockerfile
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: ENVIRONMENT
+        value: production          # hides /docs and /openapi.json
+      - key: SUPABASE_URL
+        value: https://hgcvaekiwlbqwcgchjos.supabase.co
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false                # you paste this in the Render dashboard (secret)
+      - key: ALLOWED_ORIGINS
+        sync: false                # your Vercel URL, e.g. https://goal-tracker.vercel.app

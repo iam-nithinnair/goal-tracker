@@ -28,6 +28,7 @@ It replaces the Winter Arc 2026 Google Sheet, whose scoring rules it reproduces 
 | [05 Scoring and awards](docs/05-scoring-and-awards.md) | Formulas from the sheet, streaks, badge catalogue |
 | [06 Sprint plan](docs/06-sprint-plan.md) | Sprints, Definition of Ready/Done, testing strategy, risks |
 | [07 Hosted Supabase setup](docs/07-hosted-supabase-setup.md) | Connect the app to a hosted Supabase project |
+| [08 Deploy](docs/08-deploy.md) | Deploy to Vercel (frontend) and Render (API) |
 | [Seed: Winter Arc template](docs/seed/winter-arc-template.md) | Starter challenge and its 10 goals |
 
 ## Task lists (one file per sprint)
