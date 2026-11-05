@@ -1,5 +1,6 @@
 @import '@fontsource-variable/inter';
-@import 'tailwindcss';
+/* Scan from frontend/ explicitly: the default is the process cwd, so a dev server started elsewhere generated no utilities. */
+@import 'tailwindcss' source('..');
 
 /* ------------------------------------------------------------------ design tokens
    Dark, minimal, modern: near-black canvas, hairline borders, one calm accent.
