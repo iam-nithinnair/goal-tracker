@@ -3,6 +3,7 @@ import { api } from './api'
 import type {
   Challenge,
   ChallengeDetail,
+  Dashboard,
   Entry,
   EntryWriteResult,
   Goal,
@@ -17,6 +18,7 @@ export const keys = {
   challenges: (status?: string) => ['challenges', status ?? 'all'] as const,
   challenge: (id: string) => ['challenge', id] as const,
   entries: (id: string) => ['entries', id] as const,
+  dashboard: (id: string) => ['dashboard', id] as const,
 }
 
 // ---------------------------------------------------------------- profile
@@ -85,7 +87,10 @@ function useGoalMutation<V>(challengeId: string, fn: (v: V) => Promise<unknown>)
   const qc = useQueryClient()
   return useMutation({
     mutationFn: fn,
-    onSuccess: () => qc.invalidateQueries({ queryKey: keys.challenge(challengeId) }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: keys.challenge(challengeId) })
+      qc.invalidateQueries({ queryKey: keys.dashboard(challengeId) })
+    },
   })
 }
 
@@ -119,9 +124,18 @@ export function useDeleteGoal(challengeId: string) {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: keys.challenge(challengeId) })
       qc.invalidateQueries({ queryKey: keys.entries(challengeId) })
+      qc.invalidateQueries({ queryKey: keys.dashboard(challengeId) })
     },
   })
 }
+
+// ---------------------------------------------------------------- dashboard
+export const useDashboard = (challengeId: string | undefined) =>
+  useQuery({
+    queryKey: keys.dashboard(challengeId ?? ''),
+    queryFn: () => api<Dashboard>(`/challenges/${challengeId}/dashboard`),
+    enabled: Boolean(challengeId),
+  })
 
 // ---------------------------------------------------------------- entries
 export const useEntries = (challengeId: string | undefined) =>
@@ -160,6 +174,9 @@ export function useSetEntry(challengeId: string) {
     onError: (_e, _v, ctx) => {
       if (ctx?.previous) qc.setQueryData(key, ctx.previous)
     },
-    onSettled: () => qc.invalidateQueries({ queryKey: key }),
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: key })
+      qc.invalidateQueries({ queryKey: keys.dashboard(challengeId) })
+    },
   })
 }

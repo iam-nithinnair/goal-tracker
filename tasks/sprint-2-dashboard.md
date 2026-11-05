@@ -9,7 +9,7 @@ Testing step: pytest table-driven unit tests per rule and edge case; property te
 
 ### S2-T02 Golden fixture from the sheet                           [1d]
 Description: build a fixture dataset of the Winter Arc challenge (6 Oct to 27 Oct, 10 goals, the N/A days) and expected outputs.
-Acceptance criteria: fixture reproduces Office before 10 AM = 5 done / 9 missed / 8 N/A / 36%, October = 110 / 102 / 8 / 52%, best day 90%, average daily score 51%.
+Acceptance criteria: fixture reproduces Office before 10 AM = 5 done / 9 missed / 8 N/A / 36%, October = 113 / 99 / 8 / 53%, best day 90%, average daily score 53% (the sheet's marks as imported; see doc 05).
 Testing step: pytest asserts every expected number; the fixture file is documented so a change to it needs review.
 
 ### S2-T03 Aggregation SQL (RPC)                                   [1d]

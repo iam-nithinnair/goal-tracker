@@ -50,3 +50,37 @@ export interface EntryWriteResult {
   entries: Entry[]
   new_badges: string[]
 }
+
+// ---------------------------------------------------------------- dashboard (GET /challenges/{id}/dashboard)
+/** completion is null when there is nothing to score yet; the UI shows "-". */
+interface Counts {
+  done: number
+  missed: number
+  na: number
+  completion: number | null
+}
+
+export interface Dashboard {
+  as_of: string
+  kpis: {
+    total_days: number
+    days_in: number
+    days_left: number
+    overall_completion: number | null
+    perfect_days: number
+    goals_completed: number
+    missed: number
+    na: number
+  }
+  goals: (Counts & { goal_id: string; name: string; retired: boolean })[]
+  months: (Counts & {
+    month: string
+    days: number
+    perfect_days: number
+    avg_daily_score: number | null
+    best_day: number | null
+  })[]
+  goal_months: (Counts & { goal_id: string; month: string })[]
+  weeks: { week: number; from: string; to: string; done: number; possible: number; completion: number | null }[]
+  days: { date: string; done: number; missed: number; na: number; applicable: number; score: number | null }[]
+}

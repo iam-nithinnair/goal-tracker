@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import get_settings
 from app.core.errors import install_error_handlers
-from app.routers import challenges, entries, goals, me
+from app.routers import challenges, dashboard, entries, goals, me
 
 
 def create_app() -> FastAPI:
@@ -29,7 +29,7 @@ def create_app() -> FastAPI:
     def health() -> dict:
         return {"status": "ok"}
 
-    for module in (me, challenges, goals, entries):
+    for module in (me, challenges, goals, entries, dashboard):
         app.include_router(module.router, prefix="/api/v1")
     return app
 

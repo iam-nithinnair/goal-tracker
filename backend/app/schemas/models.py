@@ -178,3 +178,71 @@ class DayPut(BaseModel):
 class EntryWriteResult(BaseModel):
     entries: list[EntryOut]
     new_badges: list[str] = []  # filled in by the awards engine in Sprint 3
+
+
+# ---------------------------------------------------------------- dashboard
+class Counts(BaseModel):
+    done: int
+    missed: int
+    na: int
+    completion: float | None  # None = nothing to score yet ("-")
+
+
+class DashboardKpis(BaseModel):
+    total_days: int
+    days_in: int
+    days_left: int
+    overall_completion: float | None
+    perfect_days: int
+    goals_completed: int
+    missed: int
+    na: int
+
+
+class GoalStats(Counts):
+    goal_id: str
+    name: str
+    retired: bool
+
+
+class MonthStats(Counts):
+    month: str  # YYYY-MM
+    days: int
+    perfect_days: int
+    avg_daily_score: float | None
+    best_day: float | None
+
+
+class GoalMonthStats(Counts):
+    goal_id: str
+    month: str
+
+
+class WeekStats(BaseModel):
+    week: int
+    from_: date = Field(serialization_alias="from")
+    to: date
+    done: int
+    possible: int
+    completion: float | None
+
+    model_config = {"populate_by_name": True}
+
+
+class DayStats(BaseModel):
+    date: date
+    done: int
+    missed: int
+    na: int
+    applicable: int
+    score: float | None
+
+
+class DashboardOut(BaseModel):
+    as_of: date
+    kpis: DashboardKpis
+    goals: list[GoalStats]
+    months: list[MonthStats]
+    goal_months: list[GoalMonthStats]
+    weeks: list[WeekStats]
+    days: list[DayStats]

@@ -29,9 +29,11 @@ For a challenge, an **as-of date** `T` = min(today in the user's timezone, chall
 
 ## Worked example (from the sheet, 27 Oct 2026, challenge 6 Oct onwards, 10 goals)
 - Office before 10 AM: 22 elapsed days, 8 N/A (days off), so applicable = 14. Done = 5, Missed = 14 - 5 = **9**, Completion = 5/14 = **36%**.
-- October (22 days x 10 goals = 220 goal-days) with 8 N/A: applicable = 212. Done = 110, Missed = **102**, Completion = 110/212 = **52%**.
-- Best single day: 9 of 10 done = **90%**. Average daily score across the 22 days: **51%**.
-These figures are test fixtures: the scoring unit tests must reproduce them (Sprint 2). The sheet counted 27 Oct as a full day, so the fixture
+- October (22 days x 10 goals = 220 goal-days) with 8 N/A: applicable = 212. Done = 113, Missed = **99**, Completion = 113/212 = **53%**.
+- Best single day: 9 of 10 done = **90%**. Average daily score across the 22 days: **53%**.
+These figures are test fixtures (`backend/tests/golden_winter_arc.py`): the scoring unit tests reproduce them. (An earlier draft of this
+page said 110 / 102 / 52% / 51%: that was the sheet before some past days were corrected; the fixture now holds the sheet's actual
+marks, and the Office before 10 AM numbers above never changed.) The sheet counted 27 Oct as a full day, so the fixture
 sets the as-of date to 28 Oct (27 Oct is then a finished day); evaluated *on* 27 Oct the app shows 21 elapsed days because today is still pending.
 
 ## Edge cases

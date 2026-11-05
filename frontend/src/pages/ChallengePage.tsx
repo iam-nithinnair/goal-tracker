@@ -2,6 +2,7 @@ import clsx from 'clsx'
 import { useState } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { ChallengeSettings } from '../components/ChallengeSettings'
+import { DashboardView } from '../components/DashboardView'
 import { DateNav } from '../components/DateNav'
 import { DayLog } from '../components/DayLog'
 import { GoalsManager } from '../components/GoalsManager'
@@ -13,6 +14,7 @@ import { useChallenge, useProfile } from '../lib/queries'
 
 const TABS = [
   { id: 'log', label: 'Log' },
+  { id: 'dashboard', label: 'Dashboard' },
   { id: 'grid', label: 'Grid' },
   { id: 'goals', label: 'Goals' },
   { id: 'settings', label: 'Settings' },
@@ -104,6 +106,7 @@ export function ChallengePage() {
           )}
         </section>
       )}
+      {tab === 'dashboard' && <DashboardView challenge={challenge} />}
       {tab === 'grid' && <GridView challenge={challenge} today={today} />}
       {tab === 'goals' && <GoalsManager challenge={challenge} today={today} />}
       {tab === 'settings' && (

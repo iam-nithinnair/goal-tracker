@@ -1,13 +1,13 @@
 # Build status
 
-Last updated: 3 Nov 2026. Legend: **Done** = built and its testing step passed; **Partial** = built, but some of
+Last updated: 5 Nov 2026. Legend: **Done** = built and its testing step passed; **Partial** = built, but some of
 the testing step or acceptance criteria are not done yet (noted); **Not started**.
 
 ## Sprint 0: Setup
 | Task | Status | Notes |
 |---|---|---|
 | S0-T01 Repository and tooling | Partial | Layout, `.gitignore`, `.env.example` done. No pre-commit hooks, Prettier or "fail if .env tracked" CI check yet. |
-| S0-T02 Supabase project and local stack | Partial | Local stack works. A hosted project exists (`hgcvaekiwlbqwcgchjos`) but the migrations are **not applied to it yet** and the app isn't pointed at it: follow docs/07-hosted-supabase-setup.md. |
+| S0-T02 Supabase project and local stack | Partial | Local stack works. The hosted project (`hgcvaekiwlbqwcgchjos`) has the migrations and template applied (5 Nov) and the app has been run against it with a real login. |
 | S0-T03 Backend skeleton | Done | `/health`, error shape, CORS, settings. Tested. |
 | S0-T04 JWT authentication | Done | HS256 (local) tested with real tokens; ES256/JWKS (what your hosted project uses) tested with a generated key, including rejection of a wrong key and of an HS256 downgrade. The live JWKS fetch from your project was confirmed to work. |
 | S0-T05 Frontend skeleton | Partial | Vite + React + TS + Tailwind + Router + Query + Vitest work; build and lint pass. Prettier not set up. |
@@ -34,9 +34,22 @@ the testing step or acceptance criteria are not done yet (noted); **Not started*
 | S1-T12 Check-in grid | Partial | Renders and cycles cells in the browser. 366 x 15 performance not measured. |
 | S1-T13 Data isolation tests | Done | 12 cross-user probes return 404; direct-database RLS tests; one probe was mutation-checked (removing the owner filter makes the test fail). |
 
+## Sprint 2: Dashboard
+| Task | Status | Notes |
+|---|---|---|
+| S2-T01 Scoring service | Done | `services/scoring.py`, pure functions; table-driven tests for every rule and edge case plus a randomised invariant (Done + Missed + N/A + pending = active goal-days). |
+| S2-T02 Golden fixture | Done | `tests/golden_winter_arc.py`. Matches the doc for Office before 10 AM (5/9/8/36%); October is 113/99/8/53% because the sheet's marks were corrected after the doc's first draft (doc 05 updated). Cross-checked against a plain tally. |
+| S2-T03 Aggregation SQL (RPC) | Skipped | Decision: the maths runs in Python over at most ~5,500 rows (366 x 15); not worth a second implementation to keep in sync. Revisit only if it gets slow. |
+| S2-T04 Dashboard endpoint | Partial | `GET /challenges/{id}/dashboard` done and tested (shape, 404 for another user's challenge). No cache yet; it recomputes per request. |
+| S2-T05 KPI tiles | Done | Rendered and checked in the browser against the golden data. |
+| S2-T06 Per-goal table | Done | Sortable, bar, "retired" tag. |
+| S2-T07 Monthly and per-goal-per-month tables | Done | Total rows equal the KPIs (tested); future months hidden. |
+| S2-T08 Weekly table and chart | Partial | Table plus CSS bars (decorative; the table is the text alternative). No Recharts and no daily-score line; no axe run. |
+| S2-T09 States and responsive layout | Partial | Loading, empty and error states done. Not yet checked at 375px, with throttling or Lighthouse. |
+
 ## Test inventory
-- Backend: 28 unit + 21 integration (against local Supabase) = 49 passing. Integration tests refuse to run against a hosted project.
-- Frontend: 24 passing (dates, status control, route guards, API client).
+- Backend: 28 unit + 19 scoring + 2 dashboard endpoint + 21 integration (against local Supabase) = 70 (the 21 integration tests were last run on 3 Nov, before Sprint 2). Integration tests refuse to run against a hosted project.
+- Frontend: 30 passing (dates, status control, route guards, API client, dashboard view).
 - Not yet: Playwright end-to-end, axe accessibility checks, performance checks.
 
 ## Known gaps and decisions
