@@ -22,10 +22,10 @@ export function DashboardView({ challenge }: { challenge: ChallengeDetail }) {
       />
     )
   }
-  return <Loaded data={data} />
+  return <DashboardContent data={data} />
 }
 
-function Loaded({ data }: { data: Dashboard }) {
+export function DashboardContent({ data }: { data: Dashboard }) {
   const names = useMemo(() => new Map(data.goals.map((g) => [g.goal_id, g.name])), [data.goals])
   const k = data.kpis
   const scores = data.days.flatMap((d) => (d.score == null ? [] : [d.score]))

@@ -2,7 +2,7 @@
 so EVERY query here must be scoped to the caller (owner_id) itself. RLS stays enabled as a
 second line of defence for any direct access (see docs/02-architecture.md)."""
 
-from datetime import date
+from datetime import UTC, date, datetime
 from functools import lru_cache
 from typing import Any
 
@@ -294,6 +294,185 @@ class Repo:
             .select("*, goals(*), profiles!challenges_owner_id_fkey(id, timezone, is_disabled)")
             .eq("is_template", False)
             .eq("status", "active")
+            .execute()
+            .data
+        )
+
+    # ------------------------------------------------------------ sharing: public links
+    def create_share_link(
+        self,
+        owner_id: str,
+        challenge_id: str,
+        scope: str,
+        expires_at: str | None,
+        token_hash: str,
+    ) -> dict:
+        return (
+            self.db.table("share_links")
+            .insert(
+                {
+                    "owner_id": owner_id,
+                    "challenge_id": challenge_id,
+                    "scope": scope,
+                    "expires_at": expires_at,
+                    "token_hash": token_hash,
+                }
+            )
+            .execute()
+            .data[0]
+        )
+
+    def list_share_links(self, challenge_id: str) -> list[dict]:
+        return (
+            self.db.table("share_links")
+            .select("id, scope, created_at, expires_at, revoked_at")
+            .eq("challenge_id", challenge_id)
+            .order("created_at", desc=True)
+            .execute()
+            .data
+        )
+
+    def revoke_share_link(self, owner_id: str, link_id: str) -> bool:
+        """Revoke (immediately) a link the caller owns; False when it is not theirs or missing."""
+        rows = (
+            self.db.table("share_links")
+            .update({"revoked_at": datetime.now(UTC).isoformat()})
+            .eq("id", link_id)
+            .eq("owner_id", owner_id)
+            .execute()
+            .data
+        )
+        return bool(rows)
+
+    def get_share_link_by_hash(self, token_hash: str) -> dict | None:
+        rows = (
+            self.db.table("share_links").select("*").eq("token_hash", token_hash).limit(1).execute()
+        ).data
+        return rows[0] if rows else None
+
+    def get_challenge_by_id(self, challenge_id: str) -> dict | None:
+        """A challenge with its goals, with NO ownership check: only call after access was proven
+        some other way (a valid share link, or a share row for the caller)."""
+        rows = (
+            self.db.table("challenges")
+            .select("*, goals(*)")
+            .eq("id", challenge_id)
+            .eq("is_template", False)
+            .limit(1)
+            .execute()
+            .data
+        )
+        if not rows:
+            return None
+        rows[0]["goals"] = sorted(rows[0]["goals"], key=lambda g: g["position"])
+        return rows[0]
+
+    # ------------------------------------------------------------ sharing: friends
+    def find_user_id_by_email(self, email: str) -> str | None:
+        return self.db.rpc("find_user_id_by_email", {"p_email": email}).execute().data or None
+
+    def friendship_between(self, a: str, b: str) -> dict | None:
+        rows = (
+            self.db.table("friendships")
+            .select("*")
+            .or_(
+                f"and(requester_id.eq.{a},addressee_id.eq.{b}),"
+                f"and(requester_id.eq.{b},addressee_id.eq.{a})"
+            )
+            .limit(1)
+            .execute()
+            .data
+        )
+        return rows[0] if rows else None
+
+    def create_friend_request(self, requester_id: str, addressee_id: str) -> None:
+        self.db.table("friendships").insert(
+            {"requester_id": requester_id, "addressee_id": addressee_id}
+        ).execute()
+
+    def get_friendship(self, friendship_id: str) -> dict | None:
+        rows = self.db.table("friendships").select("*").eq("id", friendship_id).limit(1).execute()
+        return rows.data[0] if rows.data else None
+
+    def accept_friendship(self, friendship_id: str) -> None:
+        self.db.table("friendships").update(
+            {"status": "accepted", "responded_at": datetime.now(UTC).isoformat()}
+        ).eq("id", friendship_id).execute()
+
+    def delete_friendship(self, friendship_id: str) -> None:
+        self.db.table("friendships").delete().eq("id", friendship_id).execute()
+
+    def list_friendships(self, user_id: str) -> list[dict]:
+        return (
+            self.db.table("friendships")
+            .select("*")
+            .or_(f"requester_id.eq.{user_id},addressee_id.eq.{user_id}")
+            .order("created_at", desc=True)
+            .execute()
+            .data
+        )
+
+    def profiles_by_ids(self, ids: list[str]) -> dict[str, dict]:
+        if not ids:
+            return {}
+        rows = self.db.table("profiles").select("id, display_name").in_("id", ids).execute().data
+        return {r["id"]: r for r in rows}
+
+    # ------------------------------------------------------------ sharing: with a friend
+    def create_share(self, challenge_id: str, owner_id: str, friend_id: str) -> None:
+        self.db.table("challenge_shares").upsert(
+            {"challenge_id": challenge_id, "owner_id": owner_id, "friend_id": friend_id},
+            on_conflict="challenge_id,friend_id",
+            ignore_duplicates=True,
+        ).execute()
+
+    def delete_share(self, challenge_id: str, friend_id: str) -> None:
+        (
+            self.db.table("challenge_shares")
+            .delete()
+            .eq("challenge_id", challenge_id)
+            .eq("friend_id", friend_id)
+            .execute()
+        )
+
+    def delete_shares_between(self, a: str, b: str) -> None:
+        """Drop every challenge share in either direction between two users."""
+        for owner, friend in ((a, b), (b, a)):
+            (
+                self.db.table("challenge_shares")
+                .delete()
+                .eq("owner_id", owner)
+                .eq("friend_id", friend)
+                .execute()
+            )
+
+    def list_shares(self, challenge_id: str) -> list[dict]:
+        return (
+            self.db.table("challenge_shares")
+            .select("friend_id, created_at")
+            .eq("challenge_id", challenge_id)
+            .execute()
+            .data
+        )
+
+    def get_share(self, challenge_id: str, friend_id: str) -> dict | None:
+        rows = (
+            self.db.table("challenge_shares")
+            .select("*")
+            .eq("challenge_id", challenge_id)
+            .eq("friend_id", friend_id)
+            .limit(1)
+            .execute()
+            .data
+        )
+        return rows[0] if rows else None
+
+    def list_shared_with(self, friend_id: str) -> list[dict]:
+        return (
+            self.db.table("challenge_shares")
+            .select("owner_id, created_at, challenges(id, name, start_date, end_date, status)")
+            .eq("friend_id", friend_id)
+            .order("created_at", desc=True)
             .execute()
             .data
         )

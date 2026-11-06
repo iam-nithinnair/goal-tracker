@@ -94,3 +94,8 @@ def alice() -> User:
 @pytest.fixture
 def bob() -> User:
     return _create_user("bob")
+
+
+@pytest.fixture
+def carol() -> User:
+    return _create_user("carol")

@@ -8,9 +8,11 @@ import { ApiError } from './lib/api'
 import { AwardsPage } from './pages/AwardsPage'
 import { ChallengePage } from './pages/ChallengePage'
 import { ChallengesPage } from './pages/ChallengesPage'
+import { FriendsPage } from './pages/FriendsPage'
 import { HomePage } from './pages/HomePage'
 import { NewChallengePage } from './pages/NewChallengePage'
 import { SettingsPage } from './pages/SettingsPage'
+import { PublicSharePage, SharedPage } from './pages/SharedPages'
 import { ForgotPasswordPage, LoginPage, RegisterPage, ResetPasswordPage } from './pages/auth'
 
 export function makeQueryClient() {
@@ -40,6 +42,9 @@ export function AppRoutes() {
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       </Route>
 
+      {/* a public link opens for anyone, signed in or not */}
+      <Route path="/s/:token" element={<PublicSharePage />} />
+
       <Route element={<ProtectedRoute />}>
         {/* reached through the emailed recovery link, which signs the user in */}
         <Route path="/reset-password" element={<ResetPasswordPage />} />
@@ -49,6 +54,8 @@ export function AppRoutes() {
           <Route path="/challenges/new" element={<NewChallengePage />} />
           <Route path="/challenges/:id" element={<ChallengePage />} />
           <Route path="/awards" element={<AwardsPage />} />
+          <Route path="/friends" element={<FriendsPage />} />
+          <Route path="/shared/:id" element={<SharedPage />} />
           <Route path="/settings" element={<SettingsPage />} />
         </Route>
       </Route>

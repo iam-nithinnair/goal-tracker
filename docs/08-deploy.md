@@ -34,7 +34,26 @@ Order matters because each side needs the other's URL: backend first, then front
 Open the Vercel URL, register, confirm the email if confirmation is on, create a challenge from the Winter Arc template, log a day,
 reload. Then Supabase > Table Editor shows your rows.
 
+## 5. Releasing a new sprint
+Pushing to `main` redeploys both hosts, but **database changes are not applied automatically**. Before (or right after) pushing a
+change that adds a migration, run the new file(s) from `supabase/migrations/` in the hosted project's SQL Editor, oldest first.
+Sprint 3 added `20261106000001_awards.sql` and `20261106000002_sharing.sql`. The API tolerates a missing awards table (check-ins
+still save; the Awards page shows an error until the SQL is run), but the sharing and friends endpoints need their tables.
+
+## 6. Nightly awards job (optional)
+Halfway / challenge complete / champion are awarded whenever someone opens Awards, so nothing is lost without this. To award them
+for people who have not opened the app, set `JOB_SECRET` on Render to a long random string and have something call, once a night:
+
+```
+curl -X POST https://<render-url>/api/v1/internal/jobs/awards -H "X-Job-Secret: <the secret>"
+```
+
+(a Render cron job, or a scheduled GitHub Action with the secret stored as a repository secret). Without `JOB_SECRET` the route
+does not exist as far as callers can tell.
+
 ## Notes
+- The public share endpoint is rate limited in memory (30 requests a minute per client address). That is right for one instance;
+  scaling out would need a shared store. Behind Render's proxy the address seen is the proxy's, so the limit is effectively shared.
 - The service_role/secret key lives **only** in Render's environment, never in the repo or the frontend.
 - `ENVIRONMENT=production` hides `/docs` and `/openapi.json`.
 - `backend/requirements.txt` mirrors `[project].dependencies` in `pyproject.toml`; update both when adding a dependency.

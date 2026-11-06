@@ -252,11 +252,12 @@ def test_entry_upsert_is_idempotent_last_write_wins_and_clearable(client, alice)
     goal, day = c["goals"][0]["id"], iso(today())
     url = f"{API}/goals/{goal}/entries/{day}"
 
-    for status in ("yes", "yes", "no", "na"):
+    for i, status in enumerate(("yes", "yes", "no", "na")):
         r = client.put(url, headers=alice.headers, json={"status": status})
         assert r.status_code == 200
         assert r.json()["entries"][0]["status"] == status
-        assert r.json()["new_badges"] == []
+        # only the very first write unlocks anything (First check-in); repeats never re-award
+        assert [b["code"] for b in r.json()["new_badges"]] == (["FIRST_LOG"] if i == 0 else [])
 
     rows = client.get(f"{API}/challenges/{c['id']}/entries", headers=alice.headers).json()
     assert [(e["goal_id"], e["entry_date"], e["status"]) for e in rows] == [(goal, day, "na")]

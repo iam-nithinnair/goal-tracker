@@ -102,3 +102,51 @@ export interface Dashboard {
   weeks: { week: number; from: string; to: string; done: number; possible: number; completion: number | null }[]
   days: { date: string; done: number; missed: number; na: number; applicable: number; pending: number; score: number | null }[]
 }
+
+// ---------------------------------------------------------------- sharing
+export type ShareScope = 'achievements' | 'dashboard'
+
+export interface ShareLink {
+  id: string
+  scope: ShareScope
+  created_at: string
+  expires_at: string | null
+  revoked_at: string | null
+}
+
+/** Returned once, at creation: the only time the token is available. */
+export interface ShareLinkCreated extends ShareLink {
+  token: string
+  path: string
+}
+
+export interface SharedView {
+  display_name: string
+  challenge_name: string
+  start_date: string
+  end_date: string
+  completion: number | null
+  streaks: Dashboard['streaks']
+  stars: number
+  badges: { code: string; name: string; stars: number; earned_on: string }[]
+  dashboard: Dashboard | null
+}
+
+export interface Friends {
+  friends: { user_id: string; display_name: string; since: string | null }[]
+  incoming: { id: string; display_name: string; created_at: string }[]
+}
+
+export interface ChallengeShare {
+  friend_id: string
+  display_name: string
+}
+
+export interface SharedChallenge {
+  challenge_id: string
+  name: string
+  start_date: string
+  end_date: string
+  owner_display_name: string
+  shared_at: string
+}

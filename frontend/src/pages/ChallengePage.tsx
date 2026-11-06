@@ -7,6 +7,7 @@ import { DateNav } from '../components/DateNav'
 import { DayLog } from '../components/DayLog'
 import { GoalsManager } from '../components/GoalsManager'
 import { GridView } from '../components/GridView'
+import { SharePanel } from '../components/SharePanel'
 import { EmptyState, Spinner } from '../components/ui'
 import { ApiError, errorMessage } from '../lib/api'
 import { daysBetween, formatRange, minISO, phaseOf, todayIn } from '../lib/dates'
@@ -17,6 +18,7 @@ const TABS = [
   { id: 'dashboard', label: 'Dashboard' },
   { id: 'grid', label: 'Grid' },
   { id: 'goals', label: 'Goals' },
+  { id: 'share', label: 'Share' },
   { id: 'settings', label: 'Settings' },
 ] as const
 type TabId = (typeof TABS)[number]['id']
@@ -108,6 +110,7 @@ export function ChallengePage() {
       )}
       {tab === 'dashboard' && <DashboardView challenge={challenge} />}
       {tab === 'grid' && <GridView challenge={challenge} today={today} />}
+      {tab === 'share' && <SharePanel challenge={challenge} />}
       {tab === 'goals' && <GoalsManager challenge={challenge} today={today} />}
       {tab === 'settings' && (
         <ChallengeSettings

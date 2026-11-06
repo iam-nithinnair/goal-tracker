@@ -47,9 +47,31 @@ the testing step or acceptance criteria are not done yet (noted); **Not started*
 | S2-T08 Weekly table and chart | Partial | Table plus CSS bars (decorative; the table is the text alternative). No Recharts and no daily-score line; no axe run. |
 | S2-T09 States and responsive layout | Partial | Loading, empty and error states done. Not yet checked at 375px, with throttling or Lighthouse. |
 
+## Sprint 3: Awards and sharing
+Tasks whose testing step names Playwright are **Partial**: they have API/integration tests, component tests and a manual two-user
+check in a real browser (6 Nov), but no Playwright run yet.
+
+| Task | Status | Notes |
+|---|---|---|
+| S3-T01 Streaks | Done | `services/streaks.py`; table-driven tests (neutral all-N/A days, today pending, broken then resumed). Dashboard shows current and best streak. |
+| S3-T02 Badge catalogue and storage | Done | Migration `20261106000001_awards.sql`, 13 badges seeded. Tested through PostgREST: clients can read their own rows, cannot insert (even for themselves), cannot read others'. |
+| S3-T03 Badge engine | Done | `services/badges.py` pure rules, one test per badge just below and at its threshold; integration tests for idempotency and "editing history does not revoke". A day with unlogged goals never earns a badge. |
+| S3-T04 Time-based badges | Partial | Halfway / complete / champion are awarded whenever the user opens Awards or stars (catch-up), and by `POST /internal/jobs/awards` (needs `JOB_SECRET`; invisible without it). **Not scheduled yet**: something has to call it nightly (see docs/08-deploy.md). |
+| S3-T05 Unlock toast | Partial | `new_badges` in every entry-write response; polite live region, dismissible, auto-hides, tested. No Playwright. |
+| S3-T06 Awards page | Done | Earned and locked, "how to earn", filter by challenge. |
+| S3-T07 Total stars | Done | `GET /me/stars`, header indicator. |
+| S3-T08 Public share links API | Done | 256-bit token, only its SHA-256 stored, shown once, revoke is immediate, owner-only. |
+| S3-T09 Public share page | Partial | Unknown, revoked and expired links are byte-identical 404s; nothing identifying leaks (mutation-checked); 30 requests/min per client. Open Graph preview tags are generic: the page is a single-page app, so per-link previews would need server-side rendering. |
+| S3-T10 Share link management UI | Partial | Create (scope, expiry), copy, native share sheet, list, revoke. No Playwright. |
+| S3-T11 Friend requests API | Done | Same 202 answer for known and unknown emails; you never see requests you sent; duplicates blocked; a request to someone who already asked you is a yes. |
+| S3-T12 Friends UI | Partial | List, requests, send by email, remove with confirmation. No Playwright. |
+| S3-T13 Share with a friend (API) | Done | 409 unless accepted friends; unshare is immediate; shared-with user can read the share row but not write (RLS tested). |
+| S3-T14 Shared-with-me view | Partial | Read-only view, no notes, other challenges invisible; every write route 404s for the viewer (tested). Two-user browser check done by hand. |
+| S3-T15 Cascade rules | Done | Unfriending removes shares in both directions; deleting a challenge removes its links and shares. |
+
 ## Test inventory
-- Backend: 28 unit + 19 scoring + 2 dashboard endpoint + 21 integration (against local Supabase) = 70 (the 21 integration tests were last run on 3 Nov, before Sprint 2). Integration tests refuse to run against a hosted project.
-- Frontend: 30 passing (dates, status control, route guards, API client, dashboard view).
+- Backend: 124 passing: unit (dates, auth, scoring, streaks, badges, sharing helpers, dashboard endpoint) plus 16 + 7 + 21 integration tests against local Supabase (sharing, awards, Sprint 1). Integration tests refuse to run against a hosted project.
+- Frontend: 53 passing (dates, status control, route guards, API client, dashboard, toasts, awards, sharing panel, friends, shared pages).
 - Not yet: Playwright end-to-end, axe accessibility checks, performance checks.
 
 ## Known gaps and decisions

@@ -9,6 +9,7 @@ const links = [
   { to: '/', label: 'Today', end: true },
   { to: '/challenges', label: 'Challenges', end: false },
   { to: '/awards', label: 'Awards', end: false },
+  { to: '/friends', label: 'Friends', end: false },
 ]
 
 export function AppLayout() {

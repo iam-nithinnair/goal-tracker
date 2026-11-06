@@ -45,7 +45,8 @@ Every task has an ID, acceptance criteria, an estimate and a **testing step**; e
 sprint test pass. A task is not done until its testing step passes.
 
 ## Status
-Sprint 0 and Sprint 1 are built (login, challenges and goals, Yes/No/N/A logging, grid). See
+Sprints 0 to 3 are built: login, challenges and goals, Yes/No/N/A logging, grid, the dashboard, stars and badges,
+public share links, friends and read-only sharing. Sprint 4 (super admin and groups) is next. See
 [tasks/STATUS.md](tasks/STATUS.md) for what is done, partial and not started.
 
 ## Run it locally

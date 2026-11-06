@@ -56,3 +56,18 @@ create policy challenge_shares_select_involved on public.challenge_shares
 -- no insert/update/delete policies: only the backend writes, after its own checks
 
 revoke all on public.share_links, public.friendships, public.challenge_shares from anon;
+
+-- ---------------------------------------------------------------- lookup for friend requests
+-- Resolves an email to a user id for the backend only. Clients must never be able to call this
+-- (it would let anyone test which emails have accounts).
+create or replace function public.find_user_id_by_email(p_email text)
+returns uuid
+language sql
+security definer
+set search_path = public, auth
+stable
+as $$
+  select id from auth.users where lower(email) = lower(p_email) limit 1;
+$$;
+revoke all on function public.find_user_id_by_email(text) from public, anon, authenticated;
+grant execute on function public.find_user_id_by_email(text) to service_role;
