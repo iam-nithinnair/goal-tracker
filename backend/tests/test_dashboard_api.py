@@ -50,7 +50,16 @@ def test_dashboard_shape(client):
     r = client.get(f"/api/v1/challenges/{CHALLENGE}/dashboard")
     assert r.status_code == 200
     body = r.json()
-    assert set(body) == {"as_of", "kpis", "goals", "months", "goal_months", "weeks", "days"}
+    assert set(body) == {
+        "as_of",
+        "kpis",
+        "streaks",
+        "goals",
+        "months",
+        "goal_months",
+        "weeks",
+        "days",
+    }
     assert body["kpis"]["goals_completed"] == 1
     assert body["goals"][0]["name"] == "Read"
     assert set(body["weeks"][0]) == {"week", "from", "to", "done", "possible", "completion"}

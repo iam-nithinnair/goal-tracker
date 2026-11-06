@@ -242,3 +242,58 @@ class Repo:
             .eq("entry_date", _iso(day))
             .execute()
         )
+
+    # ------------------------------------------------------------ awards
+    def list_badges(self) -> list[dict]:
+        return (
+            self.db.table("badges")
+            .select("*")
+            .eq("is_active", True)
+            .order("sort_order")
+            .execute()
+            .data
+        )
+
+    def earned_badges(self, user_id: str, challenge_id: str | None = None) -> list[dict]:
+        q = (
+            self.db.table("user_badges")
+            .select("badge_code, challenge_id, earned_on, challenges(name)")
+            .eq("user_id", user_id)
+        )
+        if challenge_id:
+            q = q.eq("challenge_id", challenge_id)
+        return q.order("earned_on").execute().data
+
+    def award_badges(
+        self, user_id: str, challenge_id: str, codes: list[str], earned_on: date
+    ) -> list[str]:
+        """Record badges, ignoring any already held; returns only the codes that are NEW."""
+        if not codes:
+            return []
+        rows = [
+            {
+                "user_id": user_id,
+                "badge_code": c,
+                "challenge_id": challenge_id,
+                "earned_on": _iso(earned_on),
+            }
+            for c in codes
+        ]
+        out = (
+            self.db.table("user_badges")
+            .upsert(rows, on_conflict="user_id,badge_code,challenge_id", ignore_duplicates=True)
+            .execute()
+            .data
+        )
+        return [r["badge_code"] for r in out]
+
+    def active_challenges_with_owners(self) -> list[dict]:
+        """Every live, non-template challenge with its owner's timezone (for the nightly job)."""
+        return (
+            self.db.table("challenges")
+            .select("*, goals(*), profiles!challenges_owner_id_fkey(id, timezone, is_disabled)")
+            .eq("is_template", False)
+            .eq("status", "active")
+            .execute()
+            .data
+        )

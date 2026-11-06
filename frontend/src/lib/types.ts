@@ -46,9 +46,26 @@ export interface Entry {
   status: Status
 }
 
+export interface Badge {
+  code: string
+  name: string
+  description: string
+  stars: number
+}
+
 export interface EntryWriteResult {
   entries: Entry[]
-  new_badges: string[]
+  new_badges: Badge[]
+}
+
+export interface BadgeStatus extends Badge {
+  earned_on: string | null
+  earned: { challenge_id: string; challenge_name: string; earned_on: string }[]
+}
+
+export interface Stars {
+  total_stars: number
+  by_challenge: { challenge_id: string; name: string; stars: number; badges: number }[]
 }
 
 // ---------------------------------------------------------------- dashboard (GET /challenges/{id}/dashboard)
@@ -62,6 +79,7 @@ interface Counts {
 
 export interface Dashboard {
   as_of: string
+  streaks: { current: number; longest: number; perfect_current: number; perfect_longest: number }
   kpis: {
     total_days: number
     days_in: number
@@ -82,5 +100,5 @@ export interface Dashboard {
   })[]
   goal_months: (Counts & { goal_id: string; month: string })[]
   weeks: { week: number; from: string; to: string; done: number; possible: number; completion: number | null }[]
-  days: { date: string; done: number; missed: number; na: number; applicable: number; score: number | null }[]
+  days: { date: string; done: number; missed: number; na: number; applicable: number; pending: number; score: number | null }[]
 }

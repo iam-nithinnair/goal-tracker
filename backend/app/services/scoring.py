@@ -12,6 +12,7 @@ from statistics import fmean
 from typing import Any
 
 from app.services.dates import in_goal_window
+from app.services.streaks import compute_streaks
 
 
 def ratio(done: int, applicable: int) -> float | None:
@@ -90,6 +91,7 @@ def compute_dashboard(
     while day <= as_of:
         tally = _Tally()
         any_logged = False
+        pending = 0
         for g in goals:
             gid = str(g["id"])
             if not in_goal_window(day, g["active_from"], g["active_to"]):
@@ -97,6 +99,7 @@ def compute_dashboard(
             status = logged.get((gid, day))
             if status is None:
                 if day == today:
+                    pending += 1
                     continue  # still pending: neither done nor missed
                 status = "no"
             else:
@@ -117,6 +120,7 @@ def compute_dashboard(
                 "missed": tally.missed,
                 "na": tally.na,
                 "applicable": tally.applicable,
+                "pending": pending,
                 "score": ratio(tally.done, tally.applicable),
             }
             days.append(record)
@@ -124,7 +128,7 @@ def compute_dashboard(
         day += timedelta(days=1)
 
     def perfect(r: dict[str, Any]) -> bool:
-        return r["applicable"] > 0 and r["done"] == r["applicable"]
+        return r["applicable"] > 0 and r["done"] == r["applicable"] and r["pending"] == 0
 
     months = []
     for key, tally in per_month.items():
@@ -163,6 +167,7 @@ def compute_dashboard(
             }
             for g in goals
         ],
+        "streaks": compute_streaks(days, today),
         "months": months,
         "goal_months": [
             {"goal_id": gid, "month": month, **tally.out()}
@@ -181,3 +186,24 @@ def compute_dashboard(
         ],
         "days": days,
     }
+
+
+def dashboard_for_challenge(
+    challenge: Mapping[str, Any], entries: Iterable[Mapping[str, Any]], today: date
+) -> dict[str, Any]:
+    """`compute_dashboard` for a challenge row as the repository returns it (ISO-string dates)."""
+    return compute_dashboard(
+        start=date.fromisoformat(challenge["start_date"]),
+        end=date.fromisoformat(challenge["end_date"]),
+        goals=[
+            {
+                "id": g["id"],
+                "name": g["name"],
+                "active_from": date.fromisoformat(g["active_from"]),
+                "active_to": date.fromisoformat(g["active_to"]) if g["active_to"] else None,
+            }
+            for g in challenge["goals"]
+        ],
+        entries=[{**e, "entry_date": date.fromisoformat(e["entry_date"])} for e in entries],
+        today=today,
+    )

@@ -37,11 +37,12 @@ function Loaded({ data }: { data: Dashboard }) {
 
   return (
     <div className="grid gap-8">
-      <section aria-label="Key numbers" className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+      <section aria-label="Key numbers" className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
         <Kpi label="Overall completion" value={pct(k.overall_completion)} accent />
         <Kpi label="Days in" value={`${k.days_in}`} hint={`of ${k.total_days}`} />
         <Kpi label="Days left" value={`${k.days_left}`} />
         <Kpi label="Goals completed" value={`${k.goals_completed}`} hint={`${k.missed} missed · ${k.na} N/A`} />
+        <Kpi label="Day streak" value={`${data.streaks.current}`} hint={`best ${data.streaks.longest}`} />
         <Kpi label="Perfect days" value={`${k.perfect_days}`} hint="every goal done" />
       </section>
 

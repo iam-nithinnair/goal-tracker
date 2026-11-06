@@ -7,6 +7,7 @@ from app.core.errors import not_found, validation_error
 from app.db.repo import Repo
 from app.deps import get_profile, get_repo
 from app.schemas.models import DayPut, EntryOut, EntryPut, EntryWriteResult
+from app.services.awards import evaluate_after_write
 from app.services.dates import check_entry_date, today_in
 
 router = APIRouter(tags=["entries"])
@@ -54,7 +55,10 @@ def put_entry(
     saved = repo.upsert_entries(
         [{"goal_id": str(goal_id), "entry_date": day.isoformat(), "status": body.status}]
     )
-    return EntryWriteResult(entries=saved)
+    new = evaluate_after_write(
+        repo, profile["id"], goal["challenge_id"], today_in(profile["timezone"])
+    )
+    return EntryWriteResult(entries=saved, new_badges=new)
 
 
 @router.put("/challenges/{challenge_id}/entries/{day}", response_model=EntryWriteResult)
@@ -76,7 +80,11 @@ def put_day(
             raise not_found("Goal")
         _check({**goal, "challenges": challenge}, day, profile)
         rows.append({"goal_id": str(e.goal_id), "entry_date": day.isoformat(), "status": e.status})
-    return EntryWriteResult(entries=repo.upsert_entries(rows))
+    saved = repo.upsert_entries(rows)
+    new = evaluate_after_write(
+        repo, profile["id"], str(challenge_id), today_in(profile["timezone"])
+    )
+    return EntryWriteResult(entries=saved, new_badges=new)
 
 
 @router.delete("/goals/{goal_id}/entries/{day}", status_code=status.HTTP_204_NO_CONTENT)

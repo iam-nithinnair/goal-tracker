@@ -3,14 +3,17 @@ import { api } from './api'
 import type {
   Challenge,
   ChallengeDetail,
+  BadgeStatus,
   Dashboard,
   Entry,
   EntryWriteResult,
   Goal,
   Profile,
+  Stars,
   Status,
   Template,
 } from './types'
+import { useToasts } from './toast'
 
 export const keys = {
   me: ['me'] as const,
@@ -19,6 +22,8 @@ export const keys = {
   challenge: (id: string) => ['challenge', id] as const,
   entries: (id: string) => ['entries', id] as const,
   dashboard: (id: string) => ['dashboard', id] as const,
+  badges: (challengeId?: string) => ['badges', challengeId ?? 'all'] as const,
+  stars: ['stars'] as const,
 }
 
 // ---------------------------------------------------------------- profile
@@ -137,6 +142,17 @@ export const useDashboard = (challengeId: string | undefined) =>
     enabled: Boolean(challengeId),
   })
 
+// ---------------------------------------------------------------- awards
+export const useBadges = (challengeId?: string) =>
+  useQuery({
+    queryKey: keys.badges(challengeId),
+    queryFn: () =>
+      api<BadgeStatus[]>(`/badges${challengeId ? `?challenge_id=${challengeId}` : ''}`),
+  })
+
+export const useStars = () =>
+  useQuery({ queryKey: keys.stars, queryFn: () => api<Stars>('/me/stars'), staleTime: 60_000 })
+
 // ---------------------------------------------------------------- entries
 export const useEntries = (challengeId: string | undefined) =>
   useQuery({
@@ -148,10 +164,11 @@ export const useEntries = (challengeId: string | undefined) =>
 /** Set (or, with status=null, clear) one goal on one day, updating the cache optimistically. */
 export function useSetEntry(challengeId: string) {
   const qc = useQueryClient()
+  const toasts = useToasts()
   const key = keys.entries(challengeId)
 
   type Vars = { goalId: string; date: string; status: Status | null }
-  return useMutation<unknown, Error, Vars, { previous?: Entry[] }>({
+  return useMutation<EntryWriteResult | void, Error, Vars, { previous?: Entry[] }>({
     mutationFn: (v) =>
       v.status === null
         ? api<void>(`/goals/${v.goalId}/entries/${v.date}`, { method: 'DELETE' })
@@ -170,6 +187,14 @@ export function useSetEntry(challengeId: string) {
         v.status === null ? rest : [...rest, { goal_id: v.goalId, entry_date: v.date, status: v.status }],
       )
       return { previous }
+    },
+    onSuccess: (result) => {
+      const unlocked = result?.new_badges ?? []
+      if (unlocked.length) {
+        unlocked.forEach((b) => toasts.push(b))
+        qc.invalidateQueries({ queryKey: ['badges'] })
+        qc.invalidateQueries({ queryKey: keys.stars })
+      }
     },
     onError: (_e, _v, ctx) => {
       if (ctx?.previous) qc.setQueryData(key, ctx.previous)

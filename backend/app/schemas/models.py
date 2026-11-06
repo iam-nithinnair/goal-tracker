@@ -175,9 +175,16 @@ class DayPut(BaseModel):
     entries: list[DayEntry] = Field(min_length=1, max_length=100)
 
 
+class BadgeOut(BaseModel):
+    code: str
+    name: str
+    description: str
+    stars: int
+
+
 class EntryWriteResult(BaseModel):
     entries: list[EntryOut]
-    new_badges: list[str] = []  # filled in by the awards engine in Sprint 3
+    new_badges: list[BadgeOut] = []
 
 
 # ---------------------------------------------------------------- dashboard
@@ -235,14 +242,47 @@ class DayStats(BaseModel):
     missed: int
     na: int
     applicable: int
+    pending: int
     score: float | None
+
+
+class Streaks(BaseModel):
+    current: int
+    longest: int
+    perfect_current: int
+    perfect_longest: int
 
 
 class DashboardOut(BaseModel):
     as_of: date
     kpis: DashboardKpis
+    streaks: Streaks
     goals: list[GoalStats]
     months: list[MonthStats]
     goal_months: list[GoalMonthStats]
     weeks: list[WeekStats]
     days: list[DayStats]
+
+
+# ---------------------------------------------------------------- awards
+class EarnedOut(BaseModel):
+    challenge_id: UUID
+    challenge_name: str
+    earned_on: date
+
+
+class BadgeStatus(BadgeOut):
+    earned_on: date | None  # first time it was earned (None = still locked)
+    earned: list[EarnedOut]  # every challenge it was earned in
+
+
+class ChallengeStars(BaseModel):
+    challenge_id: UUID
+    name: str
+    stars: int
+    badges: int
+
+
+class StarsOut(BaseModel):
+    total_stars: int
+    by_challenge: list[ChallengeStars]

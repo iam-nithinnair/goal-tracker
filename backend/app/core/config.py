@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     # Newer projects use asymmetric keys, verified through the JWKS endpoint.
     supabase_jwt_secret: str | None = None
     jwt_audience: str = "authenticated"
+    job_secret: str | None = None  # shared secret for the scheduled awards job; off when unset
     allowed_origins: str = "http://localhost:5173,http://127.0.0.1:5173"
 
     @property

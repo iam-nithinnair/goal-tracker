@@ -3,7 +3,9 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { AuthProvider } from './auth/AuthProvider'
 import { ProtectedRoute, PublicOnlyRoute } from './auth/ProtectedRoute'
 import { AppLayout } from './components/AppLayout'
+import { ToastProvider } from './components/Toasts'
 import { ApiError } from './lib/api'
+import { AwardsPage } from './pages/AwardsPage'
 import { ChallengePage } from './pages/ChallengePage'
 import { ChallengesPage } from './pages/ChallengesPage'
 import { HomePage } from './pages/HomePage'
@@ -46,6 +48,7 @@ export function AppRoutes() {
           <Route path="/challenges" element={<ChallengesPage />} />
           <Route path="/challenges/new" element={<NewChallengePage />} />
           <Route path="/challenges/:id" element={<ChallengePage />} />
+          <Route path="/awards" element={<AwardsPage />} />
           <Route path="/settings" element={<SettingsPage />} />
         </Route>
       </Route>
@@ -60,7 +63,9 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <AuthProvider>
-          <AppRoutes />
+          <ToastProvider>
+            <AppRoutes />
+          </ToastProvider>
         </AuthProvider>
       </BrowserRouter>
     </QueryClientProvider>

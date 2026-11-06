@@ -1,18 +1,20 @@
 import clsx from 'clsx'
-import { LogOut } from 'lucide-react'
+import { LogOut, Star } from 'lucide-react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/AuthProvider'
-import { useProfile } from '../lib/queries'
+import { useProfile, useStars } from '../lib/queries'
 import { Logo } from './ui'
 
 const links = [
   { to: '/', label: 'Today', end: true },
   { to: '/challenges', label: 'Challenges', end: false },
+  { to: '/awards', label: 'Awards', end: false },
 ]
 
 export function AppLayout() {
   const { signOut } = useAuth()
   const { data: profile } = useProfile()
+  const { data: stars } = useStars()
   const navigate = useNavigate()
   const initial = (profile?.display_name ?? '?').trim().charAt(0).toUpperCase()
 
@@ -31,6 +33,16 @@ export function AppLayout() {
           </nav>
 
           <div className="ml-auto flex items-center gap-2">
+            {stars && (
+              <NavLink
+                to="/awards"
+                aria-label={`${stars.total_stars} stars earned`}
+                className="flex items-center gap-1.5 rounded-full border border-line-strong px-3 py-1.5 text-sm font-medium tabular-nums text-ink transition-colors hover:border-accent"
+              >
+                <Star className="size-3.5 text-accent-strong" aria-hidden />
+                {stars.total_stars}
+              </NavLink>
+            )}
             <NavLink
               to="/settings"
               aria-label="Profile and settings"

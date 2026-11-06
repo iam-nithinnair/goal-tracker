@@ -218,3 +218,14 @@ def test_every_active_goal_day_is_done_missed_na_or_pending():
         k = out["kpis"]
         assert k["goals_completed"] + k["missed"] + k["na"] + pending == active
         assert sum(m["done"] + m["missed"] + m["na"] for m in out["months"]) == active - pending
+
+
+def test_a_partly_logged_today_is_never_perfect():
+    goals = [goal("a"), goal("b", "B")]
+    out = dash(goals, [entry("a", D(2026, 10, 3), "yes")], today=D(2026, 10, 3))
+    today_row = out["days"][-1]
+    assert (today_row["done"], today_row["pending"]) == (1, 1)
+    assert out["kpis"]["perfect_days"] == 0
+    # once the other goal is logged the day is perfect
+    both = [entry("a", D(2026, 10, 3), "yes"), entry("b", D(2026, 10, 3), "yes")]
+    assert dash(goals, both, today=D(2026, 10, 3))["kpis"]["perfect_days"] == 1

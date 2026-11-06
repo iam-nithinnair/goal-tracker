@@ -10,6 +10,7 @@ const challenge = { id: 'c1' } as ChallengeDetail
 
 const base: Dashboard = {
   as_of: '2026-10-28',
+  streaks: { current: 2, longest: 5, perfect_current: 0, perfect_longest: 0 },
   kpis: {
     total_days: 87,
     days_in: 22,
@@ -34,7 +35,7 @@ const base: Dashboard = {
     { goal_id: 'b', month: '2026-10', done: 18, missed: 4, na: 0, completion: 0.818 },
   ],
   weeks: [{ week: 1, from: '2026-10-06', to: '2026-10-12', done: 43, possible: 68, completion: 0.632 }],
-  days: [{ date: '2026-10-06', done: 9, missed: 1, na: 0, applicable: 10, score: 0.9 }],
+  days: [{ date: '2026-10-06', done: 9, missed: 1, na: 0, applicable: 10, pending: 0, score: 0.9 }],
 }
 
 const show = (data: Dashboard) => {
@@ -51,6 +52,7 @@ describe('DashboardView', () => {
     expect(within(kpis).getByText('53%')).toBeInTheDocument()
     expect(within(kpis).getByText('113')).toBeInTheDocument()
     expect(within(kpis).getByText('65')).toBeInTheDocument()
+    expect(within(kpis).getByText('best 5')).toBeInTheDocument()
   })
 
   it('tags a retired goal and shows "-" when there is nothing to score', () => {
